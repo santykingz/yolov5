@@ -1,0 +1,10 @@
+train: ../images/train/
+val:  ../images/val/
+test: ../images/test/
+
+# number of classes
+nc: 11
+
+# class names
+names: ["box", "bottle","cardboard_tube","clear_jar","aluminum_can","bag","small_plastic_container","tupperware","plastic_tub",
+"wrapped_item","other"]

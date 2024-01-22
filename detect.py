@@ -96,6 +96,7 @@ def run(
     half=False,  # use FP16 half-precision inference
     dnn=False,  # use OpenCV DNN for ONNX inference
     vid_stride=1,  # video frame-rate stride
+        return_save_dir=False
 ):
     source = str(source)
     save_img = not nosave and not source.endswith(".txt")  # save inference images
@@ -107,7 +108,7 @@ def run(
         source = check_file(source)  # download
 
     # Directories
-    save_dir = increment_path(Path(project) / name, exist_ok=exist_ok)  # increment run
+    save_dir = increment_path(Path(project) / name,sep='_', exist_ok=exist_ok)  # increment run
     (save_dir / "labels" if save_txt else save_dir).mkdir(parents=True, exist_ok=True)  # make dir
 
     # Load model
@@ -165,9 +166,17 @@ def run(
         csv_path = save_dir / "predictions.csv"
 
         # Create or append to the CSV file
-        def write_to_csv(image_name, prediction, confidence):
-            data = {"Image Name": image_name, "Prediction": prediction, "Confidence": confidence}
-            with open(csv_path, mode="a", newline="") as f:
+        def write_to_csv(image_name, prediction, confidence, xywh):
+            data = {
+                'Image Name': image_name,
+                'Prediction': prediction,
+                'Confidence': confidence,
+                'norm_x': xywh[0],
+                'norm_y': xywh[1],
+                'norm_w': xywh[2],
+                'norm_h': xywh[3],
+                }
+            with open(csv_path, mode='a', newline='') as f:
                 writer = csv.DictWriter(f, fieldnames=data.keys())
                 if not csv_path.is_file():
                     writer.writeheader()
@@ -206,7 +215,8 @@ def run(
                     confidence_str = f"{confidence:.2f}"
 
                     if save_csv:
-                        write_to_csv(p.name, label, confidence_str)
+                        xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()
+                        write_to_csv(p.name, label, confidence_str, xywh)
 
                     if save_txt:  # Write to file
                         xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
@@ -261,7 +271,7 @@ def run(
         LOGGER.info(f"Results saved to {colorstr('bold', save_dir)}{s}")
     if update:
         strip_optimizer(weights[0])  # update model (to fix SourceChangeWarning)
-
+    return save_dir
 
 def parse_opt():
     parser = argparse.ArgumentParser()
