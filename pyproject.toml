@@ -148,4 +148,4 @@ skip = '*.csv,*venv*,docs/??/,docs/mkdocs_??.yml'
 
 
 [tool.setuptools]
-py-modules = [yolov5]
+packages = [yolov5]
