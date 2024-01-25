@@ -147,5 +147,8 @@ ignore-words-list = "crate,nd,strack,dota,ane,segway,fo,gool,winn,commend"
 skip = '*.csv,*venv*,docs/??/,docs/mkdocs_??.yml'
 
 
-[tool.setuptools]
-packages = [yolov5]
+[tool.setuptools.packages.find]
+where = ["."]  # list of folders that contain the packages (["."] by default)
+include = ["<package name>"]  # package names should match these glob patterns (["*"] by default)
+exclude = []  # exclude packages matching these glob patterns (empty by default)
+namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
